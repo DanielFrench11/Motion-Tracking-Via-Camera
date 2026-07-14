@@ -1,6 +1,7 @@
 import cv2
 import random
 import numpy as np
+from time import sleep
 """img = cv2.imread("motion tracking project/cat.jpg",cv2.IMREAD_COLOR)
 print(img.shape)
 print(img[0,0])
@@ -10,9 +11,10 @@ cv2.imshow("Cat" , img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()"""
 videos=[]
-video1=cv2.VideoCapture(1)
-video2=cv2.VideoCapture(0)
+video1=cv2.VideoCapture(0)
+video2=cv2.VideoCapture(1)
 
+fps=video2.get(cv2.CAP_PROP_FPS)
 def generate_image():
     sucess,img =video2.read()
     gray_img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -30,10 +32,12 @@ def save_as_video(frames,i):
     #video.release()
     return video
 def record():
-    sensetivity=20 #lower number is more sensetive
+    recording=False # chackes if usable recordings are being created
+    sensetivity=85 #lower number is more sensetive
     i=0
     movement=False
     frames_since_movement=0
+    video=[]
     while True:
 
         sucess,img,gray_img=generate_image()
@@ -52,7 +56,7 @@ def record():
             else:
                 movement=False
 
-            if past_movement==False and movement==True:
+            """if past_movement==False and movement==True:
                 frames_since_movement=0
                 print("movement started")
                 frames=[img]
@@ -64,7 +68,32 @@ def record():
                 if len(video)>30:
 
                     videos.append(video)
-                print("movement ended")
+                print("movement ended")"""
+            
+            if movement==True:
+                frames_since_movement=0
+                if recording==True:
+                    #continue recording
+                    video.append(img)
+                else:
+                    #start recording
+                    video=[img]
+                    recording=True
+                    print("started recording")
+            else:
+                if recording==True:
+                    if frames_since_movement>10:
+                        recording=False
+                        print("recording stopped")
+                        if len(video)>30:
+                            print("recording saved")
+                            #saves video if it is long enougth
+                            
+                            videos.append(video)
+                        else:
+                            print("recording disscarded: Too short!")
+                    else:
+                        frames_since_movement+=1
         #sets current velues to past values to be read next iteration
         past_movement=movement
         past_img=gray_img
@@ -91,6 +120,7 @@ def menu():
        menu()
 def watch():
     choice = int(input(f"there are {len(videos)} videos saved, which one would you like to watch\n"))-1  
+    print(f" this video has {len(videos[choice])} frames")
     for i in range(len(videos[choice])):
         cv2.imshow("display",videos[choice][i])
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -98,6 +128,7 @@ def watch():
             break
         if i==len(videos[choice])-1:
             cv2.destroyAllWindows()
+        sleep(1/fps)
             
             
     menu()
