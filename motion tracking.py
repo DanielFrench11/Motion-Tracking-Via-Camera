@@ -2,6 +2,7 @@ import cv2
 import random
 import numpy as np
 from time import sleep
+import keyboard
 """img = cv2.imread("motion tracking project/cat.jpg",cv2.IMREAD_COLOR)
 print(img.shape)
 print(img[0,0])
@@ -15,6 +16,7 @@ video1=cv2.VideoCapture(0)
 video2=cv2.VideoCapture(1)
 
 fps=video2.get(cv2.CAP_PROP_FPS)
+print(fps)
 def generate_image():
     sucess,img =video2.read()
     gray_img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -38,14 +40,22 @@ def record():
     movement=False
     frames_since_movement=0
     video=[]
+    stop_after_frames=fps*5 # amount of frames with no motion required for recording to stop
+    min_video_length=fps*2 + stop_after_frames #2 secods of movement along with 5 seconds of no movement required for recording to stop
     while True:
+        if keyboard.is_pressed('esc'):
+            break
 
         sucess,img,gray_img=generate_image()
         if sucess:
-            cv2.imshow("camera",img)
-            cv2.imshow("gray",gray_img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            #cv2.imshow("camera",img)       #would show coloured and gray image, only enabled for debugging
+            #cv2.imshow("gray",gray_img)
+            pass
+        #if cv2.waitKey(1) & 0xFF == ord('q'): #only worked when images were shown, now used keyboard module
+        
+           # break
+
+        
             
         if i!=0: #ignore first pass where past_img has no value
             diff= cv2.absdiff(gray_img,past_img)
@@ -82,10 +92,11 @@ def record():
                     print("started recording")
             else:
                 if recording==True:
-                    if frames_since_movement>10:
+                    video.append(img) #add frames to video even when there isnt movement to ensure accurate recreation
+                    if frames_since_movement>stop_after_frames:
                         recording=False
                         print("recording stopped")
-                        if len(video)>30:
+                        if len(video)>=min_video_length:
                             print("recording saved")
                             #saves video if it is long enougth
                             
@@ -107,14 +118,16 @@ def record():
 def menu():
     choice=input("What would you like to do?\n" \
     "record footage: press 1\n" \
-    "watch footage:  press 2\n")
+    "watch footage:  press 2\n" \
+    "check camera:   press 3\n")
    
  
     if choice=="1":
        record()
     elif choice=="2":
        watch()
-   
+    elif choice=="3":
+        check_camera()
     else:
        print("invalid")
        menu()
@@ -123,13 +136,22 @@ def watch():
     print(f" this video has {len(videos[choice])} frames")
     for i in range(len(videos[choice])):
         cv2.imshow("display",videos[choice][i])
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & keyboard.is_pressed('esc'): #still used this method because i know it works for closing image windows but changed to using keyboard to make it coherent with the rest of the code
             cv2.destroyAllWindows()
             break
         if i==len(videos[choice])-1:
             cv2.destroyAllWindows()
         sleep(1/fps)
-            
-            
-    menu()
+    menu()       
+def check_camera():
+    while True:
+        sucess,img,gray_img=generate_image()
+        if sucess:
+                cv2.imshow("camera",img)       
+                cv2.imshow("gray",gray_img)   
+        if cv2.waitKey(1) & keyboard.is_pressed('esc'): #still used this method because i know it works for closing image windows but changed to using keyboard to make it coherent with the rest of the code
+                cv2.destroyAllWindows()
+                menu()
+                break
+    
 menu()
