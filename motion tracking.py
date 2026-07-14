@@ -132,7 +132,10 @@ def menu():
        print("invalid")
        menu()
 def watch():
-    choice = int(input(f"there are {len(videos)} videos saved, which one would you like to watch\n"))-1  
+    choice = int(input(f"there are {len(videos)} videos saved, which one would you like to watch\n"))-1
+    if choice==-1:
+        menu() #goes straight to menu if user enters 0
+        return
     print(f" this video has {len(videos[choice])} frames")
     for i in range(len(videos[choice])):
         cv2.imshow("display",videos[choice][i])
