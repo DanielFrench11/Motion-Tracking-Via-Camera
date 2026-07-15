@@ -4,6 +4,9 @@ import numpy as np
 from time import sleep
 import keyboard
 import tkinter as tk
+import os
+import threading
+
 """img = cv2.imread("motion tracking project/cat.jpg",cv2.IMREAD_COLOR)
 print(img.shape)
 print(img[0,0])
@@ -44,7 +47,19 @@ def record(menu_int):
     video=[]
     stop_after_frames=fps*5 # amount of frames with no motion required for recording to stop
     min_video_length=fps*2 + stop_after_frames #2 secods of movement along with 5 seconds of no movement required for recording to stop
+    def create_inter():
+        record_inter=tk.Tk()
+        #widgets
+        label1=tk.Label(record_inter,text=str(movement))
+
+        label1.pack()
+        record_inter.destroy()
+        record_inter.mainloop()
+    
+    
     while True:
+        
+
         if keyboard.is_pressed('esc'):
             break
 
@@ -57,8 +72,10 @@ def record(menu_int):
         
            # break
 
-        
-            
+
+
+
+        #detects movement   
         if i!=0: #ignore first pass where past_img has no value
             diff= cv2.absdiff(gray_img,past_img)
             thresh = cv2.threshold(diff,sensetivity,225,cv2.THRESH_BINARY)
@@ -83,6 +100,12 @@ def record(menu_int):
                 print("movement ended")"""
             
             if movement==True:
+
+                #check to see if there are any recognised faces
+
+
+
+
                 frames_since_movement=0
                 if recording==True:
                     #continue recording
@@ -112,6 +135,8 @@ def record(menu_int):
         past_img=gray_img
         i+=1
 
+    
+
         
 
         
@@ -135,21 +160,45 @@ def menu():
  
     
 def watch(menu_int):
+    def return_to_menu():
+        watch_inter.destroy()
+        menu()
+    def watch_video():
+        print("works")
+        choice=int(entry1.get())-1
+        if choice==-1:
+            watch_inter.destroy()
+            menu() #goes straight to menu if user enters 0
+            return
+        print(f" this video has {len(videos[choice])} frames")
+        for i in range(len(videos[choice])):
+            cv2.imshow("display",videos[choice][i])
+            if cv2.waitKey(1) & keyboard.is_pressed('esc'): #still used this method because i know it works for closing image windows but changed to using keyboard to make it coherent with the rest of the code
+                cv2.destroyAllWindows()
+                break
+            if i==len(videos[choice])-1:
+                cv2.destroyAllWindows()
+            sleep(1/fps)
+     
     menu_int.destroy()
-    choice = int(input(f"there are {len(videos)} videos saved, which one would you like to watch\n"))-1
-    if choice==-1:
-        menu() #goes straight to menu if user enters 0
-        return
-    print(f" this video has {len(videos[choice])} frames")
-    for i in range(len(videos[choice])):
-        cv2.imshow("display",videos[choice][i])
-        if cv2.waitKey(1) & keyboard.is_pressed('esc'): #still used this method because i know it works for closing image windows but changed to using keyboard to make it coherent with the rest of the code
-            cv2.destroyAllWindows()
-            break
-        if i==len(videos[choice])-1:
-            cv2.destroyAllWindows()
-        sleep(1/fps)
-    menu()       
+
+    watch_inter=tk.Tk()
+    watch_inter.geometry("400x200")
+    
+    label1=tk.Label(watch_inter,text=f"there are {len(videos)} videos saved, which one would you like to watch")
+    entry1=tk.Entry(watch_inter)
+    button1=tk.Button(watch_inter,text="watch",width=25,command=lambda: watch_video())
+    button2=tk.Button(watch_inter,text="return",width=25,command=lambda: return_to_menu())
+
+
+    label1.pack()
+    entry1.pack()
+    button1.pack()
+    button2.pack()
+    watch_inter.mainloop()
+    #choice = int(input(f"there are {len(videos)} videos saved, which one would you like to watch\n"))-1
+    
+    
 def check_camera(menu_int):
     menu_int.destroy()
     while True:
