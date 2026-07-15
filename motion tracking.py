@@ -3,6 +3,7 @@ import random
 import numpy as np
 from time import sleep
 import keyboard
+import tkinter as tk
 """img = cv2.imread("motion tracking project/cat.jpg",cv2.IMREAD_COLOR)
 print(img.shape)
 print(img[0,0])
@@ -14,7 +15,7 @@ cv2.destroyAllWindows()"""
 videos=[]
 video1=cv2.VideoCapture(0)
 video2=cv2.VideoCapture(1)
-
+password="hello world"
 fps=video2.get(cv2.CAP_PROP_FPS)
 print(fps)
 def generate_image():
@@ -33,9 +34,10 @@ def save_as_video(frames,i):
     #cv2.destroyAllWindows()
     #video.release()
     return video
-def record():
+def record(menu_int):
+    menu_int.destroy()
     recording=False # chackes if usable recordings are being created
-    sensetivity=85 #lower number is more sensetive
+    sensetivity=40 #lower number is more sensetive
     i=0
     movement=False
     frames_since_movement=0
@@ -116,22 +118,24 @@ def record():
     cv2.destroyAllWindows()
     menu()
 def menu():
-    choice=input("What would you like to do?\n" \
-    "record footage: press 1\n" \
-    "watch footage:  press 2\n" \
-    "check camera:   press 3\n")
+
+
+    menu_int=tk.Tk()
+    menu_int.geometry("300x300")
+    button1=tk.Button(menu_int,text="Record",width=25,command=lambda:record(menu_int))
+    button2=tk.Button(menu_int,text="Watch",width=25,command=lambda:watch(menu_int))
+    button3=tk.Button(menu_int,text="Test",width=25,command=lambda:check_camera(menu_int))
+
+    button1.pack()
+    button2.pack()
+    button3.pack()
+    menu_int.mainloop()
+    
    
  
-    if choice=="1":
-       record()
-    elif choice=="2":
-       watch()
-    elif choice=="3":
-        check_camera()
-    else:
-       print("invalid")
-       menu()
-def watch():
+    
+def watch(menu_int):
+    menu_int.destroy()
     choice = int(input(f"there are {len(videos)} videos saved, which one would you like to watch\n"))-1
     if choice==-1:
         menu() #goes straight to menu if user enters 0
@@ -146,7 +150,8 @@ def watch():
             cv2.destroyAllWindows()
         sleep(1/fps)
     menu()       
-def check_camera():
+def check_camera(menu_int):
+    menu_int.destroy()
     while True:
         sucess,img,gray_img=generate_image()
         if sucess:
@@ -156,5 +161,32 @@ def check_camera():
                 cv2.destroyAllWindows()
                 menu()
                 break
+
+def password_entry():
+    def check_password():
+        current=entry1.get()
+        
+        print("checking password")
+        print(current)
+        if current==password:
+            root.destroy()
+
+            menu()
+            
+    root=tk.Tk()
+    root.geometry("400x300")
+
     
-menu()
+    label1=tk.Label(root,text="enter password")
+    
+    entry1=tk.Entry(root)
+    button1=tk.Button(root,text="enter",width=25,command=lambda:check_password())
+
+    #root.bind("<key>",check_password)
+
+    label1.pack()
+    entry1.pack()
+    button1.pack()
+    
+    root.mainloop()
+password_entry()
