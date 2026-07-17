@@ -17,12 +17,12 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()"""
 videos=[]
 video1=cv2.VideoCapture(0)
-video2=cv2.VideoCapture(1)
+#video2=cv2.VideoCapture(1)
 password="hello world"
-fps=video2.get(cv2.CAP_PROP_FPS)
+fps=video1.get(cv2.CAP_PROP_FPS)
 print(fps)
 def generate_image():
-    sucess,img =video2.read()
+    sucess,img =video1.read()
     gray_img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     return sucess,img,gray_img
 def save_as_video(frames,i):
@@ -40,7 +40,7 @@ def save_as_video(frames,i):
 def record(menu_int):
     menu_int.destroy()
     recording=False # chackes if usable recordings are being created
-    sensetivity=40 #lower number is more sensetive
+    sensetivity=80 #lower number is more sensetive
     i=0
     movement=False
     frames_since_movement=0
@@ -78,7 +78,7 @@ def record(menu_int):
         #detects movement   
         if i!=0: #ignore first pass where past_img has no value
             diff= cv2.absdiff(gray_img,past_img)
-            thresh = cv2.threshold(diff,sensetivity,225,cv2.THRESH_BINARY)
+            thresh = cv2.threshold(diff,sensetivity,255,cv2.THRESH_BINARY)
             
             if cv2.countNonZero(thresh[1]) !=0:
                 movement=True
@@ -126,6 +126,7 @@ def record(menu_int):
                             #saves video if it is long enougth
                             
                             videos.append(video)
+                            upload(video)
                         else:
                             print("recording disscarded: Too short!")
                     else:
@@ -210,7 +211,19 @@ def check_camera(menu_int):
                 cv2.destroyAllWindows()
                 menu()
                 break
+def upload(video):
+    image=video[0]
+    height,width,layers=image.shape
+    fourcc=cv2.VideoWriter_fourcc(*'mp4v')
+    files_num=0
+    for path in os.listdir("uploaded_videos"):
+        files_num+=1
 
+    video_file=cv2.VideoWriter("uploaded_videos/output_video"+str(files_num+1)+".mp4",fourcc=fourcc,fps=fps,frameSize=(width,height))
+
+    for image in video:
+        video_file.write(image)
+    video_file.release()
 def password_entry():
     def check_password():
         current=entry1.get()
